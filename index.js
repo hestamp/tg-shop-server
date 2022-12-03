@@ -52,7 +52,7 @@ app.post('/web-data', async (req, res) => {
       id: queryId,
       title: 'Успішна покупка',
       input_message_content: {
-        message_text: `Ваше замовлення буде колись працювати. Очікуйте повідомлення з трек-номером`,
+        message_text: `Ваше замовлення буде колись працювати`,
       },
     })
     return res.status(200).json({})
