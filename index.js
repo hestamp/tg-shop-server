@@ -1,8 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api'
 import express from 'express'
 import cors from 'cors'
-const token = TGBOT_TOKEN
-const webAppUrl = REACT_APP
+const token = process.env.TGBOT_TOKEN
+const webAppUrl = process.env.REACT_APP
 
 const bot = new TelegramBot(token, { polling: true })
 const app = express()
