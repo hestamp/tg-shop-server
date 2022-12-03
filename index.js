@@ -5,6 +5,7 @@ const token = process.env.TGBOT_TOKEN
 const webAppUrl = process.env.REACT_APP
 
 const bot = new TelegramBot(token, { polling: true })
+
 const app = express()
 
 app.use(express.json())
