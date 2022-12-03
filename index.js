@@ -52,10 +52,11 @@ app.post('/web-data', async (req, res) => {
       id: queryId,
       title: 'Успішна покупка',
       input_message_content: {
-        message_text:
-          'Замовленя на суму ' +
-          totalPrice +
-          ' гривень. Очікуйте повідомлення з трек-номером',
+        message_text: `Ваше замовлення:  ${products.map((item) =>
+          item.title.join(', ')
+        )}  Замовленя на суму 
+          ${totalPrice}
+          ' гривень. Очікуйте повідомлення з трек-номером`,
       },
     })
     return res.status(200).json({})
