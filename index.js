@@ -43,10 +43,6 @@ bot.on('message', async (msg) => {
   }
 })
 
-// ${products.map((item) =>
-//   item.title.join(', ')
-// )}
-
 app.post('/web-data', async (req, res) => {
   const { queryId, products, totalPrice } = req.body
 
@@ -56,9 +52,7 @@ app.post('/web-data', async (req, res) => {
       id: queryId,
       title: 'Успішна покупка',
       input_message_content: {
-        message_text: `Ваше замовлення:  Замовленя на суму 
-          ${totalPrice}
-          ' гривень. Очікуйте повідомлення з трек-номером`,
+        message_text: `Ваше замовлення буде колись працювати. Очікуйте повідомлення з трек-номером`,
       },
     })
     return res.status(200).json({})
