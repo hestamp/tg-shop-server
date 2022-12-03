@@ -1,8 +1,8 @@
 import TelegramBot from 'node-telegram-bot-api'
 import express from 'express'
 import cors from 'cors'
-const token = `5702124363:AAFkGexhQJs66xmiPZkKxwcnSrn_8cxq0AY`
-const webAppUrl = 'https://tg-shop-react.vercel.app'
+const token = TGBOT_TOKEN
+const webAppUrl = REACT_APP
 
 const bot = new TelegramBot(token, { polling: true })
 const app = express()
