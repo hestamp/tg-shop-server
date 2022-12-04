@@ -36,6 +36,7 @@ bot.on('message', async (msg) => {
     try {
       const data = JSON.parse(msg.web_app_data.data)
       console.log(data)
+
       bot.sendMessage(
         chatId,
         `Дані отримані. Ваше замовлення буде надіслано за адресою ${data?.city}, ${data?.street} and ${data?.poshta}`
