@@ -23,6 +23,7 @@ bot.on('message', async (msg) => {
         ],
       },
     })
+
     await bot.sendMessage(chatId, 'Зробити замовлення', {
       reply_markup: {
         inline_keyboard: [
