@@ -55,6 +55,7 @@ app.post('/web-data', async (req, res) => {
         message_text: `Ваше замовлення буде колись працювати`,
       },
     })
+
     return res.status(200).json({})
   } catch (error) {
     await bot.answerWebAppQuery(queryId, {
