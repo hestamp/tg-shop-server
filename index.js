@@ -68,6 +68,7 @@ app.post('/web-data', async (req, res) => {
         message_text: 'Замовлення не сформовано. Спробуйте ще раз',
       },
     })
+
     return res.status(500).json({})
   }
 })
