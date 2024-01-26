@@ -63,7 +63,7 @@ mongoose
 
 // Import the user model and validation function
 
-const bot = new TelegramBot(token, { polling: true })
+// const bot = new TelegramBot(token, { polling: true })
 
 const app = express()
 app.use(compression({ filter: shouldCompress }))
@@ -116,61 +116,61 @@ app.post('/userdata', async (req, res) => {
 //     console.error('Failed to set menu button:', error)
 //   })
 
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id
+// bot.on('message', async (msg) => {
+//   const chatId = msg.chat.id
 
-  const windowMs = 60 * 1000 // 60 seconds
-  const max = 10 // Max 10 messages per window
+//   const windowMs = 60 * 1000 // 60 seconds
+//   const max = 10 // Max 10 messages per window
 
-  if (isRateLimited(chatId, windowMs, max)) {
-    await bot.sendMessage(chatId, 'Too many requests, please try again later')
-    return
-  }
+//   if (isRateLimited(chatId, windowMs, max)) {
+//     await bot.sendMessage(chatId, 'Too many requests, please try again later')
+//     return
+//   }
 
-  console.log(chatId)
-  // const newuser = await checkUser(chatId)
-  // console.log(`acc registered`)
-  // console.log(newuser)
-  // This will log the chat ID to your console
+//   console.log(chatId)
+//   // const newuser = await checkUser(chatId)
+//   // console.log(`acc registered`)
+//   // console.log(newuser)
+//   // This will log the chat ID to your console
 
-  bot.sendMessage(
-    chatId,
-    `Your chat ID is: ${chatId}, and you send to this bot  messages`
-  )
-})
+//   bot.sendMessage(
+//     chatId,
+//     `Your chat ID is: ${chatId}, and you send to this bot  messages`
+//   )
+// })
 
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id
-  const text = msg.text
+// bot.on('message', async (msg) => {
+//   const chatId = msg.chat.id
+//   const text = msg.text
 
-  if (text === '/start') {
-    await bot.sendMessage(chatId, 'Кнопка зявиться нижче, заповніть форму', {
-      reply_markup: {
-        keyboard: [[{ text: 'Заповнити форму', web_app: { url: webAppUrl } }]],
-      },
-    })
+//   if (text === '/start') {
+//     await bot.sendMessage(chatId, 'Кнопка зявиться нижче, заповніть форму', {
+//       reply_markup: {
+//         keyboard: [[{ text: 'Заповнити форму', web_app: { url: webAppUrl } }]],
+//       },
+//     })
 
-    // await bot.sendMessage(chatId, 'Зробити замовлення', {
-    //   reply_markup: {
-    //     inline_keyboard: [
-    //       [{ text: 'Зробити замовлення', web_app: { url: webAppUrl } }],
-    //     ],
-    //   },
-    // })
-  }
+//     // await bot.sendMessage(chatId, 'Зробити замовлення', {
+//     //   reply_markup: {
+//     //     inline_keyboard: [
+//     //       [{ text: 'Зробити замовлення', web_app: { url: webAppUrl } }],
+//     //     ],
+//     //   },
+//     // })
+//   }
 
-  if (msg?.web_app_data?.data) {
-    try {
-      const data = JSON.parse(msg.web_app_data.data)
-      console.log(data)
+//   if (msg?.web_app_data?.data) {
+//     try {
+//       const data = JSON.parse(msg.web_app_data.data)
+//       console.log(data)
 
-      bot.sendMessage(
-        chatId,
-        `Дані отримані. Ваше замовлення буде надіслано за адресою ${data?.city}, ${data?.street} and ${data?.poshta}`
-      )
-    } catch (error) {}
-  }
-})
+//       bot.sendMessage(
+//         chatId,
+//         `Дані отримані. Ваше замовлення буде надіслано за адресою ${data?.city}, ${data?.street} and ${data?.poshta}`
+//       )
+//     } catch (error) {}
+//   }
+// })
 
 app.post('/web-data', async (req, res) => {
   const { queryId, products, totalPrice } = req.body
@@ -200,6 +200,9 @@ app.post('/web-data', async (req, res) => {
   }
 })
 
-const PORT = 8000
+const port = process.env.PORT || 3000
 
-app.listen(PORT, () => console.log('server is running on PORT ' + PORT))
+// Listen on `port` and 0.0.0.0
+app.listen(port, '0.0.0.0', function () {
+  console.log(`server is running on port ${port}`)
+})
