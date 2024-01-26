@@ -200,9 +200,13 @@ app.post('/web-data', async (req, res) => {
   }
 })
 
-const port = process.env.PORT || 3000
+const defaultPort = 8000
 
-// Listen on `port` and 0.0.0.0
-app.listen(port, '0.0.0.0', function () {
-  console.log(`server is running on port ${port}`)
+// Determine the running environment
+const isProduction = process.env.NODE_ENV === 'production'
+const port = isProduction ? process.env.PORT : defaultPort
+const host = isProduction ? '0.0.0.0' : 'localhost'
+
+app.listen(port, host, () => {
+  console.log(`Server running on ${host}:${port}`)
 })
