@@ -135,7 +135,7 @@ bot.on('message', async (msg) => {
 
   bot.sendMessage(
     chatId,
-    `Your chat ID is: ${chatId}, and you send to this bot ${newuser.visits} messages`
+    `Your chat ID is: ${chatId}, and you send to this bot  messages`
   )
 })
 
