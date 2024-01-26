@@ -8,6 +8,8 @@ import { authLimiter, globalLimiter } from './utils/limiter.js'
 import { checkUser } from './controllers/UserController.js'
 config()
 
+import UserModel from './models/User.js'
+
 const rateLimitData = {}
 
 function isRateLimited(chatId, windowMs, max) {
@@ -93,6 +95,8 @@ async function processAndStoreTelegramData(initData) {
 
 app.post('/userdata', async (req, res) => {
   const { initData } = req.body
+  console.log('user data recieved from client')
+  console.log(initData)
   // Extract necessary data from initData
   // Use your function to process and store this data in your MongoDB database
   try {
@@ -124,9 +128,9 @@ bot.on('message', async (msg) => {
   }
 
   console.log(chatId)
-  const newuser = await checkUser(chatId)
-  console.log(`acc registered`)
-  console.log(newuser)
+  // const newuser = await checkUser(chatId)
+  // console.log(`acc registered`)
+  // console.log(newuser)
   // This will log the chat ID to your console
 
   bot.sendMessage(

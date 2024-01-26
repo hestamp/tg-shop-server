@@ -101,6 +101,7 @@ export const checkUser = async (idreq) => {
         const signUpFields = {
           authId: idreq,
           msgcount: 1,
+          lastVisit: iso8601Date,
         }
 
         const doc = new UserModel(signUpFields)
