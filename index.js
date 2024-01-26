@@ -81,6 +81,7 @@ async function processAndStoreTelegramData(initData) {
   // Update the user with the new Telegram data
   const user = await UserModel.findOne({ authId: initData.user.id })
   if (user) {
+    console.log(user)
     user.telegramData = initData
     await user.save()
     return user
