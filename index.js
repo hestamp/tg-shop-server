@@ -5,10 +5,25 @@ import { config } from 'dotenv'
 import compression from 'compression'
 import cors from 'cors'
 import { authLimiter, globalLimiter } from './utils/limiter.js'
-import { checkUser } from './controllers/UserController.js'
+import { getUser } from './controllers/UserController.js'
+import { handleValidationErrors, checkAuth } from './utils/index.js'
 config()
 
 import UserModel from './models/User.js'
+import {
+  createEcho,
+  editEcho,
+  goalUpdate,
+  removeEcho,
+  settingUpdate,
+} from './controllers/UserPatch.js'
+import {
+  editEchoValidator,
+  goalValidator,
+  newEchoValidator,
+  removeEchoValidator,
+  settingEditValidator,
+} from './utils/validator.js'
 
 const rateLimitData = {}
 
@@ -44,15 +59,15 @@ const WEBAPP_URL = process.env.WEBAPP_URL
 // const webAppUrl = process.env.REACT_APP
 const webAppUrl = WEBAPP_URL
 
-function shouldCompress(req, res) {
-  if (req.headers['x-no-compression']) {
-    // don't compress responses with this request header
-    return false
-  }
+// function shouldCompress(req, res) {
+//   if (req.headers['x-no-compression']) {
+//     // don't compress responses with this request header
+//     return false
+//   }
 
-  // fallback to standard filter function
-  return compression.filter(req, res)
-}
+//   // fallback to standard filter function
+//   return compression.filter(req, res)
+// }
 
 mongoose.set('strictQuery', true)
 
@@ -63,28 +78,21 @@ mongoose
 
 // Import the user model and validation function
 
-// const bot = new TelegramBot(token, { polling: true })
+const bot = new TelegramBot(token, { polling: true })
 
 const app = express()
-app.use(compression({ filter: shouldCompress }))
 
-app.use(express.json())
-app.use(cors())
+// app.set('trust proxy', false)
+// app.use(compression({ filter: shouldCompress }))
 
-app.use(globalLimiter)
-
-app.use('/api/auth/login', authLimiter)
-
-app.post('/api/auth/login', authLimiter)
-
-async function processAndStoreTelegramData(initData) {
+async function processAndStoreTelegramData({ unsafe }) {
   // Extract necessary information from initData
   // Find the user by some unique identifier (e.g., authId)
   // Update the user with the new Telegram data
-  const user = await UserModel.findOne({ authId: initData.user.id })
+  const user = await UserModel.findOne({ authId: unsafe.user.id })
   if (!user) {
     console.log(user)
-    user.telegramData = initData
+    user.telegramData = unsafe
     await user.save()
     return user
   } else {
@@ -93,19 +101,34 @@ async function processAndStoreTelegramData(initData) {
   }
 }
 
-app.post('/userdata', async (req, res) => {
-  const { initData } = req.body
-  console.log('user data recieved from client')
-  console.log(initData)
-  // Extract necessary data from initData
-  // Use your function to process and store this data in your MongoDB database
-  try {
-    const updatedUser = await processAndStoreTelegramData(initData)
-    res.json({ success: true, updatedUser })
-  } catch (error) {
-    res.status(500).json({ success: false, message: error.message })
-  }
-})
+app.use(express.json())
+app.use(cors())
+
+app.use(globalLimiter)
+
+app.use('/api/auth/userdata', authLimiter)
+app.post('/api/auth/userdata', getUser)
+
+//update settings name
+app.patch('/api/auth/setting/', settingEditValidator, checkAuth, settingUpdate)
+
+//create echos of user
+app.patch('/api/auth/echos/create', newEchoValidator, checkAuth, createEcho)
+
+//edit existing echo
+app.patch('/api/auth/echos/edit', editEchoValidator, checkAuth, editEcho)
+
+app.patch('/api/auth/echos/remove', removeEchoValidator, checkAuth, removeEcho)
+
+app.patch('/api/auth/goal', goalValidator, checkAuth, goalUpdate)
+
+const userId = 969788508 // From your provided data
+const message = `Bot is running or reload, and this is message i send you. Time ${Date.now()}` // The message you want to send
+
+bot
+  .sendMessage(userId, message)
+  .then((response) => console.log('Message sent'))
+  .catch((error) => console.error(error))
 
 // bot
 //   .setChatMenuButton(chatId, menuButton)
@@ -116,89 +139,98 @@ app.post('/userdata', async (req, res) => {
 //     console.error('Failed to set menu button:', error)
 //   })
 
-// bot.on('message', async (msg) => {
-//   const chatId = msg.chat.id
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id
+  const userName = msg.chat.first_name
+  const chaTime = msg.date
+  console.log(chaTime)
+  const nowdate = new Date()
 
-//   const windowMs = 60 * 1000 // 60 seconds
-//   const max = 10 // Max 10 messages per window
+  const timestampInSeconds = Math.floor(nowdate.getTime() / 1000)
 
-//   if (isRateLimited(chatId, windowMs, max)) {
-//     await bot.sendMessage(chatId, 'Too many requests, please try again later')
-//     return
-//   }
+  console.log(timestampInSeconds)
 
-//   console.log(chatId)
-//   // const newuser = await checkUser(chatId)
-//   // console.log(`acc registered`)
-//   // console.log(newuser)
-//   // This will log the chat ID to your console
+  const windowMs = 60 * 1000 // 60 seconds
+  const max = 1 // Max 10 messages per window
 
-//   bot.sendMessage(
-//     chatId,
-//     `Your chat ID is: ${chatId}, and you send to this bot  messages`
-//   )
-// })
+  if (isRateLimited(chatId, windowMs, max)) {
+    await bot.sendMessage(chatId, 'Too many requests, please try again later')
+    return
+  }
 
-// bot.on('message', async (msg) => {
-//   const chatId = msg.chat.id
-//   const text = msg.text
+  // const newuser = await checkUser(chatId)
+  // console.log(`acc registered`)
+  // console.log(newuser)
+  // This will log the chat ID to your console
 
-//   if (text === '/start') {
-//     await bot.sendMessage(chatId, 'Кнопка зявиться нижче, заповніть форму', {
-//       reply_markup: {
-//         keyboard: [[{ text: 'Заповнити форму', web_app: { url: webAppUrl } }]],
+  bot.sendMessage(
+    chatId,
+    `Hey, ${userName}. This is demo version of MindEcho. To start - click on \"Open My Test\" button 
+  \n Note: Development version still runs localy, so this bot might not be active sometimes.`
+  )
+})
+
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id
+  console.log(msg)
+  const text = msg.text
+
+  // if (text === '/start') {
+  //   await bot.sendMessage(chatId, 'Кнопка зявиться нижче, заповніть форму', {
+  //     reply_markup: {
+  //       keyboard: [[{ text: 'Заповнити форму', web_app: { url: webAppUrl } }]],
+  //     },
+  //   })
+
+  //   await bot.sendMessage(chatId, 'Зробити замовлення', {
+  //     reply_markup: {
+  //       inline_keyboard: [
+  //         [{ text: 'Зробити замовлення', web_app: { url: webAppUrl } }],
+  //       ],
+  //     },
+  //   })
+  // }
+
+  // if (msg?.web_app_data?.data) {
+  //   try {
+  //     const data = JSON.parse(msg.web_app_data.data)
+  //     console.log(data)
+
+  //     bot.sendMessage(
+  //       chatId,
+  //       `Дані отримані. Ваше замовлення буде надіслано за адресою ${data?.city}, ${data?.street} and ${data?.poshta}`
+  //     )
+  //   } catch (error) {}
+  // }
+})
+
+// app.post('/web-data', async (req, res) => {
+//   const { queryId, products, totalPrice } = req.body
+
+//   try {
+//     await bot.answerWebAppQuery(queryId, {
+//       type: 'article',
+//       id: queryId,
+//       title: 'Успішна покупка',
+//       input_message_content: {
+//         message_text: `Ваше замовлення буде колись працювати`,
 //       },
 //     })
 
-//     // await bot.sendMessage(chatId, 'Зробити замовлення', {
-//     //   reply_markup: {
-//     //     inline_keyboard: [
-//     //       [{ text: 'Зробити замовлення', web_app: { url: webAppUrl } }],
-//     //     ],
-//     //   },
-//     // })
-//   }
+//     return res.status(200).json({})
+//   } catch (error) {
+//     await bot.answerWebAppQuery(queryId, {
+//       type: 'article',
+//       id: queryId,
+//       title: 'Невдала спроба покупки',
+//       input_message_content: {
+//         message_text: 'Замовлення не сформовано. Спробуйте ще раз',
+//       },
+//     })
 
-//   if (msg?.web_app_data?.data) {
-//     try {
-//       const data = JSON.parse(msg.web_app_data.data)
-//       console.log(data)
-
-//       bot.sendMessage(
-//         chatId,
-//         `Дані отримані. Ваше замовлення буде надіслано за адресою ${data?.city}, ${data?.street} and ${data?.poshta}`
-//       )
-//     } catch (error) {}
+//     return res.status(500).json({})
 //   }
 // })
-
-app.post('/web-data', async (req, res) => {
-  const { queryId, products, totalPrice } = req.body
-
-  try {
-    await bot.answerWebAppQuery(queryId, {
-      type: 'article',
-      id: queryId,
-      title: 'Успішна покупка',
-      input_message_content: {
-        message_text: `Ваше замовлення буде колись працювати`,
-      },
-    })
-
-    return res.status(200).json({})
-  } catch (error) {
-    await bot.answerWebAppQuery(queryId, {
-      type: 'article',
-      id: queryId,
-      title: 'Невдала спроба покупки',
-      input_message_content: {
-        message_text: 'Замовлення не сформовано. Спробуйте ще раз',
-      },
-    })
-
-    return res.status(500).json({})
-  }
-})
 
 const defaultPort = 8000
 

@@ -3,53 +3,49 @@ import mongoose from 'mongoose'
 const UserSchema = new mongoose.Schema(
   {
     authId: {
-      type: String,
+      type: Number,
       required: true,
       unique: true,
     },
-    provider: {
-      type: String,
-      required: true,
-    },
-    lastVisit: {
-      type: String,
-      required: true,
-    },
-    lang: {
+    platform: {
       type: String,
     },
-    msgcount: {
+    timezone: {
+      type: String,
+      default: 'UTC',
+    },
+    goal: { type: String, default: '' },
+    fullName: {
+      type: String,
+    },
+    lastAppOpen: {
       type: Number,
       default: 0,
     },
+    echos: { type: Array, default: [] },
+    regDate: { type: Number, default: 0 },
+    tgid: { type: Number, default: 0 },
+    lang: { type: String },
+    firstName: { type: String, default: '' },
+    lastName: { type: String, default: '' },
     telegramData: {
-      queryId: String,
-      user: {
-        id: Number,
-        isBot: Boolean,
-        firstName: String,
-        lastName: String,
-        username: String,
-        languageCode: String,
-        isPremium: Boolean,
-        addedToAttachmentMenu: Boolean,
-        allowsWriteToPm: Boolean,
-        photoUrl: String,
-      },
-
-      chat: {
-        id: Number,
-        type: String,
-        title: String,
-        username: String,
-        photoUrl: String,
-      },
-      chatType: String,
-      chatInstance: String,
-      startParam: String,
-      canSendAfter: Number,
       authDate: Number,
       hash: String,
+    },
+    nickname: { type: String, default: null, unique: true },
+    achive: {
+      type: Array,
+      default: [
+        { id: 101, current: 0, last: null, next: null, done: false },
+        { id: 102, current: 0, last: null, next: null, done: false },
+        { id: 103, current: 0, last: null, next: null, done: false },
+        { id: 104, current: 0, last: null, next: null, done: false },
+        { id: 105, current: 0, last: null, next: null, done: false },
+        { id: 106, current: 0, last: null, next: null, done: false },
+        { id: 107, current: 0, last: null, next: null, done: false },
+        { id: 108, current: 0, last: null, next: null, done: false },
+        { id: 109, current: 0, last: null, next: null, done: false },
+      ],
     },
   },
   {
