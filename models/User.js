@@ -32,7 +32,6 @@ const UserSchema = new mongoose.Schema(
       authDate: Number,
       hash: String,
     },
-    nickname: { type: String, default: '', unique: false },
     achive: {
       type: Array,
       default: [
