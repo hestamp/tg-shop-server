@@ -6,16 +6,6 @@ export const settingUpdate = async (req, res) => {
     console.log(UserId)
     const updateFields = {}
 
-    // if (req.body.temp) {
-    //   updateFields.temp = req.body.temp
-    // }
-    // if (req.body.date) {
-    //   updateFields.date = req.body.date
-    // }
-    // if (req.body.wind) {
-    //   updateFields.wind = req.body.wind
-    // }
-
     // if (req.body.clothes) {
     //   updateFields.clothes = req.body.clothes
     // }
@@ -23,10 +13,6 @@ export const settingUpdate = async (req, res) => {
     if (req.body.fullName) {
       updateFields.fullName = req.body.fullName
     }
-
-    // if (req.body.showavatar) {
-    //   updateFields.showavatar = req.body.showavatar == '+' ? true : false
-    // }
 
     await UserModel.updateOne(
       {
