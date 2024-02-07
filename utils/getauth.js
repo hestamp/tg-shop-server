@@ -1,4 +1,4 @@
-import UserModel from '../models/User.js'
+import UserModel from '../models/Usermodel.js'
 
 export default async (req, res, next) => {
   const userId = req.body.authId

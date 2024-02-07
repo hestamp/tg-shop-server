@@ -1,4 +1,4 @@
-import UserModel from '../models/User.js'
+import UserModel from '../models/Usermodel.js'
 
 function generateNumber(inputNumber) {
   const randomSuffix = Array.from({ length: 3 }, () =>

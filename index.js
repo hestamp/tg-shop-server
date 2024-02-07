@@ -9,7 +9,7 @@ import { getUser } from './controllers/UserController.js'
 import { handleValidationErrors, checkAuth } from './utils/index.js'
 config()
 
-import UserModel from './models/User.js'
+import UserModel from './models/Usermodel.js'
 import {
   createEcho,
   editEcho,
