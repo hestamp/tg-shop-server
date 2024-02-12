@@ -5,8 +5,17 @@ import { config } from 'dotenv'
 import compression from 'compression'
 import cors from 'cors'
 import { authLimiter, globalLimiter } from './utils/limiter.js'
-import { getUser } from './controllers/UserController.js'
+import { getUser, userNewParamAdd } from './controllers/UserController.js'
 import { handleValidationErrors, checkAuth } from './utils/index.js'
+
+import dayjs from 'dayjs'
+import utc from 'dayjs/plugin/utc.js' // Import UTC plugin if needed
+import timezone from 'dayjs/plugin/timezone.js' // Import timezone plugin if needed
+
+// Extend dayjs with UTC and timezone plugins if you need timezone support
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 config()
 
 import UserModel from './models/Usermodel.js'
@@ -14,6 +23,7 @@ import {
   createEcho,
   editEcho,
   goalUpdate,
+  notiftimeUpdate,
   removeEcho,
   settingUpdate,
 } from './controllers/UserPatch.js'
@@ -21,6 +31,7 @@ import {
   editEchoValidator,
   goalValidator,
   newEchoValidator,
+  notifTimeValidator,
   removeEchoValidator,
   settingEditValidator,
 } from './utils/validator.js'
@@ -82,24 +93,8 @@ const bot = new TelegramBot(token, { polling: true })
 
 const app = express()
 
-// app.set('trust proxy', false)
+app.set('trust proxy', 1)
 // app.use(compression({ filter: shouldCompress }))
-
-async function processAndStoreTelegramData({ unsafe }) {
-  // Extract necessary information from initData
-  // Find the user by some unique identifier (e.g., authId)
-  // Update the user with the new Telegram data
-  const user = await UserModel.findOne({ authId: unsafe.user.id })
-  if (!user) {
-    console.log(user)
-    user.telegramData = unsafe
-    await user.save()
-    return user
-  } else {
-    // Handle the case if the user does not exist
-    // You might want to create a new user or handle differently
-  }
-}
 
 app.use(express.json())
 app.use(cors())
@@ -111,6 +106,12 @@ app.post('/api/auth/userdata', getUser)
 
 //update settings name
 app.patch('/api/auth/setting/', settingEditValidator, checkAuth, settingUpdate)
+app.patch(
+  '/api/auth/setting/notiftime',
+  notifTimeValidator,
+  checkAuth,
+  notiftimeUpdate
+)
 
 //create echos of user
 app.patch('/api/auth/echos/create', newEchoValidator, checkAuth, createEcho)
@@ -122,8 +123,11 @@ app.patch('/api/auth/echos/remove', removeEchoValidator, checkAuth, removeEcho)
 
 app.patch('/api/auth/goal', goalValidator, checkAuth, goalUpdate)
 
-const userId = 969788508 // From your provided data
-const message = `Bot is running or reload, and this is message i send you. Time ${Date.now()}` // The message you want to send
+app.patch('/api/admin/newparam', userNewParamAdd)
+
+const userId = 6908036343 // From your provided data
+
+const message = `⚡️ Bot is running or reload, and this is message i send you. Time ${Date.now()} ` // The message you want to send
 
 bot
   .sendMessage(userId, message)
@@ -231,6 +235,88 @@ bot.on('message', async (msg) => {
 //     return res.status(500).json({})
 //   }
 // })
+
+const sendNotificationsToUsers = async () => {
+  try {
+    // Get current server time
+    const serverTime = dayjs().format('HH:mm')
+    console.log('Server time:', serverTime)
+
+    // Get all users with notifications enabled
+    const users = await UserModel.find({
+      'notifications.basic': true,
+      'notifications.time': { $ne: null }, // Ensure users have set notification time
+    })
+
+    // Iterate over users
+    users.forEach(async (user) => {
+      const userTimezone = user.timezone || 'UTC' // Use UTC if timezone not set for user
+      console.log('User timezone:', userTimezone)
+
+      const userTime = serverTime.tz(userTimezone).format('hh:mm A') // Convert server time to user's timezone
+      console.log('User time:', userTime)
+
+      console.log('User notification time:', user.notifications.time)
+
+      if (user.notifications.time === userTime) {
+        // Send notification to user
+        console.log(`Sending notification to user ${user.id}`)
+
+        const newmsg = 'arria'
+        const userId = user.authId
+        bot
+          .sendMessage(userId, newmsg)
+          .then((response) => console.log('Message sent'))
+          .catch((error) => console.error(error))
+        // Your notification sending logic here
+
+        // For example, sending a message via Telegram bot
+        // await bot.sendMessage(user.tgid, 'Hello, you have something to learn');
+      }
+    })
+  } catch (error) {
+    console.error('Error sending notifications:', error)
+  }
+}
+const runNotificationCheck = () => {
+  // Calculate the delay until the next half-hour mark
+  const now = new Date()
+
+  const minutesUntilNextHalfHour = 30 - (now.getMinutes() % 30)
+
+  const millisecondsUntilNextHalfHour = minutesUntilNextHalfHour * 60 * 1000
+
+  const checkAndRun = async () => {
+    // Get the current minute
+    const currentMinute = new Date().getMinutes()
+    console.log(currentMinute, ' now mint')
+
+    const newcond = currentMinute % 2 !== 0
+    // Check if the current minute is a multiple of 10
+    console.log('condition ' + newcond)
+    if (currentMinute % 2 !== 0) {
+      // await sendNotificationsToUsers()
+      console.log('CONDITION GOOD')
+    }
+
+    // Schedule the next check after 10 minutes
+    setTimeout(checkAndRun, 1 * 60 * 1000) // 10 minutes * 60 seconds * 1000 milliseconds
+  }
+
+  checkAndRun()
+
+  // Schedule the function to run every 30 minutes from the next half-hour mark
+  // setTimeout(async () => {
+  //   await sendNotificationsToUsers()
+
+  //   // After the first run, schedule it to run every 30 minutes
+  //   setInterval(async () => {
+  //     await sendNotificationsToUsers()
+  //   }, 1 * 60 * 1000) // 30 minutes * 60 seconds * 1000 milliseconds
+  // }, millisecondsUntilNextHalfHour)
+}
+
+runNotificationCheck()
 
 const defaultPort = 8000
 

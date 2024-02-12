@@ -6,26 +6,14 @@ export const settingEditValidator = [
     if (req.body.fullName) {
       req.body.fullName = xss(req.body.fullName)
     }
-    // if (req.body.date) {
-    //   req.body.date = xss(req.body.date)
-    // }
-    // if (req.body.wind) {
-    //   req.body.wind = xss(req.body.wind)
-    // }
-    // if (req.body.clothes) {
-    //   req.body.clothes = xss(req.body.clothes)
-    // }
-    // if (req.body.fullName) {
-    //   req.body.fullName = xss(req.body.fullName)
-    // }
+    if (req.body.quotes) {
+      req.body.quotes = xss(req.body.quotes)
+    }
 
     next()
   },
   body('fullName', 'Invalid name format').optional(),
-  // body('wind', 'Invalid wind unit').isIn(['mph', 'kmh']).optional(),
-  // body('clothes', 'Invalid clothes settings').isString().optional(),
-  // body('fullName', 'Invalid wind unit').isString().optional(),
-  // body('date', 'Invalid date format').isString().optional(),
+  body('quotes', 'Invalid quote format').optional(),
 ]
 export const editEchoValidator = [
   (req, res, next) => {
@@ -36,6 +24,16 @@ export const editEchoValidator = [
     next()
   },
   body('echos', 'Invalid array format').optional(),
+]
+export const notifTimeValidator = [
+  (req, res, next) => {
+    if (req.body.newtime) {
+      req.body.newtime = xss(req.body.newtime)
+    }
+
+    next()
+  },
+  body('newtime', 'Invalid notif').optional(),
 ]
 export const newEchoValidator = [
   (req, res, next) => {

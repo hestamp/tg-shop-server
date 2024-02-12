@@ -113,3 +113,33 @@ export const getUser = async (req, res) => {
     })
   }
 }
+
+export const userNewParamAdd = async (req, res) => {
+  try {
+    const updateResult = await UserModel.updateMany(
+      {}, // An empty filter object matches all documents
+
+      {
+        $set: {
+          'stats.totalEchos': 0,
+          'notifications.basic': true,
+          'notifications.echoes': true,
+          'notifications.time': null,
+        },
+      },
+      { multi: true } // This option is not necessary for updateMany, but added for clarity
+    )
+
+    console.log('All users updated:', updateResult)
+
+    if (updateResult) {
+      return res.status(404).json({ results: updateResult })
+    } else {
+      res.status(500).json({ message: 'Error updating goal', error: 'custom' })
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating goal', error: error })
+
+    console.error('Error updating users:', error)
+  }
+}

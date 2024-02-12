@@ -3,7 +3,7 @@ import UserModel from '../models/Usermodel.js'
 export const settingUpdate = async (req, res) => {
   try {
     const UserId = req.body.authId
-    console.log(UserId)
+
     const updateFields = {}
 
     // if (req.body.clothes) {
@@ -14,6 +14,38 @@ export const settingUpdate = async (req, res) => {
       updateFields.fullName = req.body.fullName
     }
 
+    if (req.body.quotes) {
+      updateFields.quotes = req.body.quotes
+    }
+
+    await UserModel.updateOne(
+      {
+        authId: UserId,
+      },
+      updateFields
+    )
+
+    res.json({
+      success: true,
+    })
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({
+      message: 'Cant update setting',
+    })
+    // errorHandler(error, req)
+  }
+}
+export const notiftimeUpdate = async (req, res) => {
+  try {
+    const UserId = req.body.authId
+    const newTime = req.body.newtime
+
+    // Construct the update object
+    const updateFields = {}
+    if (newTime !== undefined) {
+      updateFields['notifications.time'] = newTime
+    }
     await UserModel.updateOne(
       {
         authId: UserId,
@@ -38,8 +70,8 @@ export const goalUpdate = async (req, res) => {
     const UserId = req.body.authId
     console.log(UserId)
     const updateFields = {}
-
-    if (req.body.goalUpdate) {
+    console.log(req.body.goal)
+    if (req.body.goal) {
       updateFields.goal = req.body.goal
     }
 
@@ -66,7 +98,10 @@ export const createEcho = async (req, res) => {
     const UserId = req.body.authId
     const newEcho = req.body.newEcho
 
-    await UserModel.updateOne({ authId: UserId }, { $push: { echos: newEcho } })
+    await UserModel.updateOne(
+      { authId: UserId },
+      { $push: { echos: newEcho }, $inc: { 'stats.totalEchos': 1 } }
+    )
 
     res.json({
       success: true,

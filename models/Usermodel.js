@@ -22,6 +22,22 @@ const UserSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    stats: {
+      totalEchos: {
+        type: Number,
+        default: 0,
+      },
+      // newEchoApprentice: {
+      //   type: Boolean,
+      //   default: false,
+      // },
+    },
+    notifications: {
+      basic: { type: Boolean, default: true },
+      echoes: { type: Boolean, default: true },
+      time: { type: String, default: null },
+    },
+    quotes: { type: String, default: 'true' },
     echos: { type: Array, default: [] },
     regDate: { type: Number, default: 0 },
     tgid: { type: Number, default: 0 },
