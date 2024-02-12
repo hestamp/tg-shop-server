@@ -18,7 +18,6 @@ dayjs.extend(timezone)
 
 config()
 
-import UserModel from './models/Usermodel.js'
 import {
   createEcho,
   editEcho,
@@ -35,6 +34,7 @@ import {
   removeEchoValidator,
   settingEditValidator,
 } from './utils/validator.js'
+import { sendNotificationsToUsers } from './utils/notifications.js'
 
 const rateLimitData = {}
 
@@ -236,87 +236,18 @@ bot.on('message', async (msg) => {
 //   }
 // })
 
-const sendNotificationsToUsers = async () => {
-  try {
-    // Get current server time
-    const serverTime = dayjs().format('HH:mm')
-    console.log('Server time:', serverTime)
+const runNotificationsCheckAndSend = async () => {
+  // Get the current minute
+  const currentMinute = new Date().getMinutes()
+  console.log(`Notifications check and send run at ${currentMinute} minute`)
 
-    // Get all users with notifications enabled
-    const users = await UserModel.find({
-      'notifications.basic': true,
-      'notifications.time': { $ne: null }, // Ensure users have set notification time
-    })
+  await sendNotificationsToUsers()
 
-    // Iterate over users
-    users.forEach(async (user) => {
-      const userTimezone = user.timezone || 'UTC' // Use UTC if timezone not set for user
-      console.log('User timezone:', userTimezone)
-
-      const userTime = serverTime.tz(userTimezone).format('hh:mm A') // Convert server time to user's timezone
-      console.log('User time:', userTime)
-
-      console.log('User notification time:', user.notifications.time)
-
-      if (user.notifications.time === userTime) {
-        // Send notification to user
-        console.log(`Sending notification to user ${user.id}`)
-
-        const newmsg = 'arria'
-        const userId = user.authId
-        bot
-          .sendMessage(userId, newmsg)
-          .then((response) => console.log('Message sent'))
-          .catch((error) => console.error(error))
-        // Your notification sending logic here
-
-        // For example, sending a message via Telegram bot
-        // await bot.sendMessage(user.tgid, 'Hello, you have something to learn');
-      }
-    })
-  } catch (error) {
-    console.error('Error sending notifications:', error)
-  }
-}
-const runNotificationCheck = () => {
-  // Calculate the delay until the next half-hour mark
-  const now = new Date()
-
-  const minutesUntilNextHalfHour = 30 - (now.getMinutes() % 30)
-
-  const millisecondsUntilNextHalfHour = minutesUntilNextHalfHour * 60 * 1000
-
-  const checkAndRun = async () => {
-    // Get the current minute
-    const currentMinute = new Date().getMinutes()
-    console.log(currentMinute, ' now mint')
-
-    const newcond = currentMinute % 2 !== 0
-    // Check if the current minute is a multiple of 10
-    console.log('condition ' + newcond)
-    if (currentMinute % 2 !== 0) {
-      // await sendNotificationsToUsers()
-      console.log('CONDITION GOOD')
-    }
-
-    // Schedule the next check after 10 minutes
-    setTimeout(checkAndRun, 1 * 60 * 1000) // 10 minutes * 60 seconds * 1000 milliseconds
-  }
-
-  checkAndRun()
-
-  // Schedule the function to run every 30 minutes from the next half-hour mark
-  // setTimeout(async () => {
-  //   await sendNotificationsToUsers()
-
-  //   // After the first run, schedule it to run every 30 minutes
-  //   setInterval(async () => {
-  //     await sendNotificationsToUsers()
-  //   }, 1 * 60 * 1000) // 30 minutes * 60 seconds * 1000 milliseconds
-  // }, millisecondsUntilNextHalfHour)
+  // Schedule the next check after 1 minute
+  setTimeout(runNotificationsCheckAndSend, 60000) // 1 minutes * 60 seconds * 1000 milliseconds
 }
 
-runNotificationCheck()
+runNotificationsCheckAndSend()
 
 const defaultPort = 8000
 
