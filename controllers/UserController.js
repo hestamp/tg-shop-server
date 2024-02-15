@@ -93,8 +93,6 @@ export const getUser = async (req, res) => {
           ...userData
         } = founduser._doc
 
-        console.log(userData)
-
         res.json({
           user: userData,
         })
@@ -111,6 +109,66 @@ export const getUser = async (req, res) => {
       message: 'Error, please reload page and try again',
       error: 500,
     })
+  }
+}
+export const getUserTgMessage = async (user) => {
+  const localuserid = user.from.id || user.chat.id
+  if (localuserid) {
+    try {
+      const nowUnix = Date.now()
+
+      const founduser = await UserModel.findOne({ tgid: localuserid })
+      if (!founduser) {
+        const userId = generateNumber(nowUnix) || nowUnix
+
+        const userForm = {}
+        userForm.timezone = 'UTC'
+        userForm.lastAppOpen = 0
+        userForm.regDate = nowUnix
+        userForm.authId = userId
+        userForm.platform = 'unknown'
+        userForm.tgid = localuserid
+        userForm.firstName = user.chat.first_name || `user${localuserid}`
+        userForm.lastName = ''
+        userForm.fullName = user.chat.first_name || `user${localuserid}`
+        userForm.lang = user.from.language_code || 'en'
+        userForm.telegramData = {
+          authDate: '',
+          hash: '',
+        }
+
+        const doc = new UserModel(userForm)
+
+        const newuser = await doc.save()
+        if (newuser) {
+          console.log('new user saved')
+          return {
+            success: true,
+            message: 'New user was saved!',
+            error: null,
+          }
+        } else {
+          console.log('User was not saved')
+          return {
+            success: false,
+            message: 'New user was not saved!',
+            error: null,
+          }
+        }
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: 'Some error while creating user from message',
+        error: error,
+      }
+    }
+  } else {
+    return {
+      success: false,
+      message: 'Some user launch bot without user credentials',
+      error: null,
+    }
   }
 }
 

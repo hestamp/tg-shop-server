@@ -7,6 +7,22 @@ import UserModel from '../models/Usermodel.js'
 dayjs.extend(utc)
 dayjs.extend(timezone)
 
+const generateNoEchoMessage = () => {
+  const messages = [
+    "You don't have any echoes scheduled for today. Why not take this opportunity to learn something new?",
+    'No echoes to repeat for today. How about using this time to expand your knowledge?',
+    "Looks like you're echo-free for today. Why not explore new topics to enhance your skills?",
+    'No echoes on your schedule today. Take this chance to dive into a new subject!',
+    'Echo-less day ahead! Use this time to discover something new and exciting.',
+    "Today's a blank slate for echoes. How about filling it with some fresh learning?",
+    'No echoes to repeat for today. Embrace the opportunity to explore new horizons!',
+    'Your schedule is echo-free today. Use this time to enrich your mind with fresh insights.',
+    'Echo-free zone for today. Seize the moment to embark on a learning adventure!',
+    'No echoes scheduled. Dive into the world of knowledge and create new echoes!',
+  ]
+  return messages[Math.floor(Math.random() * messages.length)]
+}
+
 const generateEchoMessage = (echoNames) => {
   const numEchoes = echoNames.length
 
@@ -88,18 +104,15 @@ const checkForScheduledEcho = async (user) => {
 
     const today = echoNamesForToday.length > 0
 
-    return { today, echoNames: echoNamesForToday }
+    return { today: today, echoNames: echoNamesForToday }
   } catch (error) {
     console.error('Error checking for scheduled echo:', error)
     return { today: false, echoNames: [] } // Return empty array in case of error
   }
 }
 
-export const sendNotificationsToUsers = async () => {
+export const sendNotificationsToUsers = async ({ bot }) => {
   try {
-    // Get current server time
-    const serverTime = dayjs().format('HH:mm')
-
     // Get all users with notifications enabled
     const users = await UserModel.find({
       'notifications.echoes': true,
@@ -119,16 +132,30 @@ export const sendNotificationsToUsers = async () => {
       // Convert server time to user's timezone
 
       if (user.notifications.time == userTime) {
-        const { today, echoNames } = checkForScheduledEcho(user)
+        const { today, echoNames } = await checkForScheduledEcho(user)
+        const userId = user.tgid
+        const userName = user.fullName
 
         if (today) {
           const message = generateEchoMessage(echoNames)
 
           // Send notification to user
-          console.log(`Sending notification to user ${user.id}`)
-          const userId = user.tgid
+          console.log(
+            `Sending notification to user ${userName} with id: ${userId}, remind to repeat added echoes`
+          )
+
           bot
             .sendMessage(userId, message)
+            .then((response) => console.log('Message sent'))
+            .catch((error) => console.error(error))
+        } else {
+          const messageNoEchoes = generateNoEchoMessage()
+          console.log(
+            `Sending notification to user ${userName} with id: ${userId}, remind to add some echoes`
+          )
+
+          bot
+            .sendMessage(userId, messageNoEchoes)
             .then((response) => console.log('Message sent'))
             .catch((error) => console.error(error))
         }

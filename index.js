@@ -5,7 +5,11 @@ import { config } from 'dotenv'
 import compression from 'compression'
 import cors from 'cors'
 import { authLimiter, globalLimiter } from './utils/limiter.js'
-import { getUser, userNewParamAdd } from './controllers/UserController.js'
+import {
+  getUser,
+  getUserTgMessage,
+  userNewParamAdd,
+} from './controllers/UserController.js'
 import { handleValidationErrors, checkAuth } from './utils/index.js'
 
 import dayjs from 'dayjs'
@@ -134,114 +138,46 @@ bot
   .then((response) => console.log('Message sent'))
   .catch((error) => console.error(error))
 
-// bot
-//   .setChatMenuButton(chatId, menuButton)
-//   .then(() => {
-//     console.log('Menu button set successfully')
-//   })
-//   .catch((error) => {
-//     console.error('Failed to set menu button:', error)
-//   })
-
 bot.on('message', async (msg) => {
   const chatId = msg.chat.id
+  const msgText = msg.text
   const userName = msg.chat.first_name
-  const chaTime = msg.date
-  console.log(chaTime)
-  const nowdate = new Date()
 
-  const timestampInSeconds = Math.floor(nowdate.getTime() / 1000)
-
-  console.log(timestampInSeconds)
-
-  const windowMs = 60 * 1000 // 60 seconds
-  const max = 1 // Max 10 messages per window
+  const windowMs = 60000 // 60 seconds
+  const max = 30 // Max 30 messages per chatId
 
   if (isRateLimited(chatId, windowMs, max)) {
     await bot.sendMessage(chatId, 'Too many requests, please try again later')
     return
   }
 
-  // const newuser = await checkUser(chatId)
-  // console.log(`acc registered`)
-  // console.log(newuser)
-  // This will log the chat ID to your console
+  let usermsg = ''
 
-  bot.sendMessage(
-    chatId,
-    `Hey, ${userName}. This is demo version of MindEcho. To start - click on \"Open My Test\" button 
-  \n Note: Development version still runs localy, so this bot might not be active sometimes.`
-  )
+  if (msgText == '/help') {
+    usermsg = 'dont panic, we will help you'
+  } else if (msgText == '/start') {
+    usermsg = `Hey, ${userName}. This is demo version of MindEcho. To start - click on \"Test My App\" button 
+    \n Note: This is Development version so there might be some bugs. Dont be scared, they cannot bite you.`
+  } else {
+    usermsg = 'other scenario'
+  }
+
+  bot.sendMessage(chatId, usermsg)
+
+  const savingresults = await getUserTgMessage(msg)
+  console.log(savingresults?.message, `TGID: ${msg.from.id}`)
+
+  if (savingresults?.error) {
+    console.log(savingresults.error)
+  }
 })
-
-bot.on('message', async (msg) => {
-  const chatId = msg.chat.id
-  console.log(msg)
-  const text = msg.text
-
-  // if (text === '/start') {
-  //   await bot.sendMessage(chatId, 'Кнопка зявиться нижче, заповніть форму', {
-  //     reply_markup: {
-  //       keyboard: [[{ text: 'Заповнити форму', web_app: { url: webAppUrl } }]],
-  //     },
-  //   })
-
-  //   await bot.sendMessage(chatId, 'Зробити замовлення', {
-  //     reply_markup: {
-  //       inline_keyboard: [
-  //         [{ text: 'Зробити замовлення', web_app: { url: webAppUrl } }],
-  //       ],
-  //     },
-  //   })
-  // }
-
-  // if (msg?.web_app_data?.data) {
-  //   try {
-  //     const data = JSON.parse(msg.web_app_data.data)
-  //     console.log(data)
-
-  //     bot.sendMessage(
-  //       chatId,
-  //       `Дані отримані. Ваше замовлення буде надіслано за адресою ${data?.city}, ${data?.street} and ${data?.poshta}`
-  //     )
-  //   } catch (error) {}
-  // }
-})
-
-// app.post('/web-data', async (req, res) => {
-//   const { queryId, products, totalPrice } = req.body
-
-//   try {
-//     await bot.answerWebAppQuery(queryId, {
-//       type: 'article',
-//       id: queryId,
-//       title: 'Успішна покупка',
-//       input_message_content: {
-//         message_text: `Ваше замовлення буде колись працювати`,
-//       },
-//     })
-
-//     return res.status(200).json({})
-//   } catch (error) {
-//     await bot.answerWebAppQuery(queryId, {
-//       type: 'article',
-//       id: queryId,
-//       title: 'Невдала спроба покупки',
-//       input_message_content: {
-//         message_text: 'Замовлення не сформовано. Спробуйте ще раз',
-//       },
-//     })
-
-//     return res.status(500).json({})
-//   }
-// })
 
 const runNotificationsCheckAndSend = async () => {
   // Get the current minute
   const currentMinute = new Date().getMinutes()
   console.log(`Notifications check and send run at ${currentMinute} minute`)
 
-  await sendNotificationsToUsers()
+  await sendNotificationsToUsers({ bot: bot })
 
   // Schedule the next check after 1 minute
   setTimeout(runNotificationsCheckAndSend, 60000) // 1 minutes * 60 seconds * 1000 milliseconds
