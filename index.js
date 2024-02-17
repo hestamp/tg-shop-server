@@ -165,6 +165,7 @@ bot.on('message', async (msg) => {
   bot.sendMessage(chatId, usermsg)
 
   const savingresults = await getUserTgMessage(msg)
+
   console.log(savingresults?.message, `TGID: ${msg.from.id}`)
 
   if (savingresults?.error) {

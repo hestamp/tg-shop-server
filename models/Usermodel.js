@@ -19,8 +19,8 @@ const UserSchema = new mongoose.Schema(
       type: String,
     },
     lastAppOpen: {
-      type: Number,
-      default: 0,
+      type: String,
+      default: '0',
     },
     stats: {
       totalEchos: {
@@ -39,7 +39,7 @@ const UserSchema = new mongoose.Schema(
     },
     quotes: { type: String, default: 'true' },
     echos: { type: Array, default: [] },
-    regDate: { type: Number, default: 0 },
+    regDate: { type: String, default: '0' },
     tgid: { type: Number, default: 0 },
     lang: { type: String },
     firstName: { type: String, default: '' },

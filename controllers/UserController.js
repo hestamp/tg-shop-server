@@ -13,7 +13,7 @@ export const getUser = async (req, res) => {
     try {
       const { tgid, tgdata, platform, timezone } = req.body
 
-      const nowUnix = Date.now()
+      const nowUnix = new Date()
 
       const founduser = await UserModel.findOne({ tgid: tgid })
       if (!founduser) {
@@ -115,7 +115,7 @@ export const getUserTgMessage = async (user) => {
   const localuserid = user.from.id || user.chat.id
   if (localuserid) {
     try {
-      const nowUnix = Date.now()
+      const nowUnix = new Date()
 
       const founduser = await UserModel.findOne({ tgid: localuserid })
       if (!founduser) {
@@ -141,19 +141,26 @@ export const getUserTgMessage = async (user) => {
 
         const newuser = await doc.save()
         if (newuser) {
-          console.log('new user saved')
           return {
             success: true,
             message: 'New user was saved!',
             error: null,
+            status: 200,
           }
         } else {
-          console.log('User was not saved')
           return {
             success: false,
             message: 'New user was not saved!',
+            status: 505,
             error: null,
           }
+        }
+      } else {
+        return {
+          success: true,
+          message: 'User already exist',
+          status: 200,
+          error: null,
         }
       }
     } catch (error) {
@@ -161,6 +168,7 @@ export const getUserTgMessage = async (user) => {
         success: false,
         message: 'Some error while creating user from message',
         error: error,
+        status: 505,
       }
     }
   } else {
@@ -168,6 +176,7 @@ export const getUserTgMessage = async (user) => {
       success: false,
       message: 'Some user launch bot without user credentials',
       error: null,
+      status: 303,
     }
   }
 }
