@@ -13,7 +13,8 @@ export const getUser = async (req, res) => {
     try {
       const { tgid, tgdata, platform, timezone } = req.body
 
-      const nowUnix = new Date()
+      const nowUnixTime = new Date()
+      const nowUnix = nowUnixTime.toISOString()
 
       const founduser = await UserModel.findOne({ tgid: tgid })
       if (!founduser) {
@@ -115,7 +116,8 @@ export const getUserTgMessage = async (user) => {
   const localuserid = user.from.id || user.chat.id
   if (localuserid) {
     try {
-      const nowUnix = new Date()
+      const nowUnixTime = new Date()
+      const nowUnix = nowUnixTime.toISOString()
 
       const founduser = await UserModel.findOne({ tgid: localuserid })
       if (!founduser) {
