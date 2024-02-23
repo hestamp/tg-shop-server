@@ -18,6 +18,9 @@ export const settingUpdate = async (req, res) => {
       updateFields.quotes = req.body.quotes
     }
 
+    if (req.body.notifications) {
+      updateFields.notifications = req.body.notifications
+    }
     await UserModel.updateOne(
       {
         authId: UserId,

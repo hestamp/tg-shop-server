@@ -149,15 +149,18 @@ export const sendNotificationsToUsers = async ({ bot }) => {
             .then((response) => console.log('Message sent'))
             .catch((error) => console.error(error))
         } else {
-          const messageNoEchoes = generateNoEchoMessage()
-          console.log(
-            `Sending notification to user ${userName} with id: ${userId}, remind to add some echoes`
-          )
+          if (user.notifications.empty == true) {
+            const messageNoEchoes = generateNoEchoMessage()
+            console.log(
+              `Sending notification to user ${userName} with id: ${userId}, remind to add some echoes`
+            )
 
-          bot
-            .sendMessage(userId, messageNoEchoes)
-            .then((response) => console.log('Message sent'))
-            .catch((error) => console.error(error))
+            bot
+              .sendMessage(userId, messageNoEchoes)
+              .then((response) => console.log('Message sent'))
+              .catch((error) => console.error(error))
+          } else {
+          }
         }
       }
     })
