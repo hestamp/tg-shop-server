@@ -29,6 +29,7 @@ import {
   notiftimeUpdate,
   removeEcho,
   settingUpdate,
+  updateAchiveStat,
 } from './controllers/UserPatch.js'
 import {
   editEchoValidator,
@@ -37,6 +38,7 @@ import {
   notifTimeValidator,
   removeEchoValidator,
   settingEditValidator,
+  updateAchiveValidator,
 } from './utils/validator.js'
 import { sendNotificationsToUsers } from './utils/notifications.js'
 
@@ -124,6 +126,14 @@ app.patch('/api/auth/echos/create', newEchoValidator, checkAuth, createEcho)
 app.patch('/api/auth/echos/edit', editEchoValidator, checkAuth, editEcho)
 
 app.patch('/api/auth/echos/remove', removeEchoValidator, checkAuth, removeEcho)
+
+//achives
+app.patch(
+  '/api/auth/achive/update',
+  updateAchiveValidator,
+  checkAuth,
+  updateAchiveStat
+)
 
 app.patch('/api/auth/goal', goalValidator, checkAuth, goalUpdate)
 

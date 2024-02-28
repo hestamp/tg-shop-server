@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const UserSchema = new mongoose.Schema(
+const StatSchema = new mongoose.Schema(
   {
     authId: {
       type: Number,
@@ -63,72 +63,10 @@ const UserSchema = new mongoose.Schema(
       authDate: Number,
       hash: String,
     },
-    achive: {
-      type: Array,
-      default: [
-        {
-          id: 101,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 102,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 103,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 104,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 105,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 106,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 107,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 108,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-        {
-          id: 109,
-          done: false,
-          checked: false,
-          current: 0,
-        },
-      ],
-    },
   },
   {
     timestamps: true,
   }
 )
 
-export default mongoose.model('User', UserSchema)
-
-// export const UserModel =
-//   mongoose.models.User || mongoose.model('User', UserSchema)
+export default mongoose.model('Stat', StatSchema)

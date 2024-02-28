@@ -1,11 +1,9 @@
 import dayjs from 'dayjs'
 import utc from 'dayjs/plugin/utc.js' // Import UTC plugin if needed
 import timezone from 'dayjs/plugin/timezone.js' // Import timezone plugin if needed
-
-import UserModel from '../models/Usermodel.js'
-
 dayjs.extend(utc)
 dayjs.extend(timezone)
+import UserModel from '../models/Usermodel.js'
 
 const generateNoEchoMessage = () => {
   const messages = [
@@ -52,27 +50,27 @@ const generateEchoMessage = (echoNames) => {
       `For now you need to repeat ${echoNames
         .slice(0, 2)
         .join(
-          ' and '
+          ' , '
         )} and ${remainingEchoes} more echoes to continue your streak`,
       `You have ${numEchoes} echoes scheduled for today. Start with ${echoNames
         .slice(0, 2)
-        .join(' and ')} and continue with the rest`,
+        .join(' , ')} and continue with the rest`,
       `Today's echoes include ${echoNames
         .slice(0, 2)
         .join(
-          ' and '
+          ' , '
         )} and ${remainingEchoes} more. Make sure to complete them all!`,
       `To keep your momentum going, repeat ${echoNames
         .slice(0, 2)
-        .join(' and ')} today, and don't forget about the others`,
+        .join(', ')} today, and don't forget about the others`,
       `Make today count by starting with ${echoNames
         .slice(0, 2)
         .join(
-          ' and '
+          ' , '
         )} and then completing the remaining ${remainingEchoes} echoes`,
       `Echoes for today: ${echoNames
         .slice(0, 2)
-        .join(' and ')} and ${remainingEchoes} more`,
+        .join(', ')} and ${remainingEchoes} more`,
     ]
     return messages[Math.floor(Math.random() * messages.length)]
   }

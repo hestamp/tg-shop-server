@@ -25,6 +25,17 @@ export const editEchoValidator = [
   },
   body('echos', 'Invalid array format').optional(),
 ]
+export const updateAchiveValidator = [
+  (req, res, next) => {
+    if (req.body.achiveId) {
+      req.body.achiveId = xss(req.body.achiveId)
+    }
+
+    next()
+  },
+
+  body('achiveId', 'Invalid array format').isNumeric(),
+]
 export const notifTimeValidator = [
   (req, res, next) => {
     if (req.body.newtime) {

@@ -100,10 +100,19 @@ export const createEcho = async (req, res) => {
   try {
     const UserId = req.body.authId
     const newEcho = req.body.newEcho
+    const repStat = req.body.repStat
+    const repDate = req.body.repDate
 
     await UserModel.updateOne(
       { authId: UserId },
-      { $push: { echos: newEcho }, $inc: { 'stats.totalEchos': 1 } }
+      {
+        $push: { echos: newEcho },
+        $inc: { 'stats.totalEchos': 1, 'stats.learnedTimes': 1 },
+        $set: {
+          'stats.repetitionEchoes.last': repDate,
+          'stats.repetitionEchoes.count': repStat,
+        },
+      }
     )
 
     res.json({
@@ -122,8 +131,12 @@ export const editEcho = async (req, res) => {
     const UserId = req.body.authId
     const echoIdToEdit = req.body.echoId
     const updatedEchoData = req.body.updatedEchoData
-
-    console.log(updatedEchoData)
+    const isRepeat = req.body.repeat || false
+    const isCompleted = req.body.completed || false
+    const repStat = req.body.repStat
+    const repDate = req.body.repDate
+    console.log(repStat)
+    console.log(repDate)
 
     // Find the user by authId
     const user = await UserModel.findOne({ authId: UserId })
@@ -132,7 +145,7 @@ export const editEcho = async (req, res) => {
       return res.status(404).json({ message: 'User not found' })
     }
 
-    const echoIndex = user.echos.findIndex((echo) => echo.id === echoIdToEdit)
+    const echoIndex = user.echos.findIndex((echo) => echo.id == echoIdToEdit)
 
     if (echoIndex === -1) {
       return res.status(404).json({ message: 'Echo not found' })
@@ -140,9 +153,22 @@ export const editEcho = async (req, res) => {
 
     // Update the echo in the echos array
     user.echos[echoIndex] = updatedEchoData
+    if (isRepeat) {
+      user.stats.learnedTimes = user.stats.learnedTimes + 1
+    }
+    if (isCompleted) {
+      user.stats.completedEchoes = user.stats.completedEchoes + 1
+    }
+    if (repStat) {
+      user.stats = { ...user.stats, 'repetitionEchoes.count': repStat }
+    }
+    if (repDate) {
+      user.stats = { ...user.stats, 'repetitionEchoes.last': repDate }
+    }
 
     // Save the updated user document
-    await user.save()
+    const newuserSave = await user.save()
+    console.log(newuserSave)
 
     res.json({
       success: true,
@@ -174,6 +200,54 @@ export const removeEcho = async (req, res) => {
     console.error(error)
     res.status(500).json({
       message: "Can't remove echo",
+    })
+  }
+}
+
+export const updateAchiveStat = async (req, res) => {
+  try {
+    console.log('this run')
+    const UserId = req.body.authId
+    const achiveId = req.body.achiveId
+    const achiveChecked = req.body.checked
+    const achiveDone = req.body.done
+
+    // Find the user by authId
+    const user = await UserModel.findOne({ authId: UserId })
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    const achiveIn = user.achive.find((achive) => achive.id == achiveId)
+    const achiveIndex = user.achive.findIndex((achive) => achive.id == achiveId)
+
+    if (achiveChecked) {
+      achiveIn.checked = true
+    }
+
+    if (achiveDone) {
+      achiveIn.done = true
+    }
+
+    console.log(achiveIn)
+    console.log(achiveIndex)
+
+    if (achiveIndex === -1) {
+      return res.status(404).json({ message: 'Achive not found' })
+    }
+    user.achive[achiveIndex] = achiveIn
+
+    // Save the updated user document
+    await user.save()
+
+    res.json({
+      success: true,
+    })
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({
+      message: "Can't edit achive",
     })
   }
 }

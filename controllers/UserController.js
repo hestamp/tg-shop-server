@@ -14,11 +14,12 @@ export const getUser = async (req, res) => {
       const { tgid, tgdata, platform, timezone } = req.body
 
       const nowUnixTime = new Date()
+      const timeDate = Date.now()
       const nowUnix = nowUnixTime.toISOString()
 
       const founduser = await UserModel.findOne({ tgid: tgid })
       if (!founduser) {
-        const userId = generateNumber(nowUnix) || nowUnix
+        const userId = generateNumber(timeDate) || timeDate
 
         const userForm = {}
         userForm.timezone = timezone || 'UTC'
@@ -117,11 +118,12 @@ export const getUserTgMessage = async (user) => {
   if (localuserid) {
     try {
       const nowUnixTime = new Date()
+      const timeDate = Date.now()
       const nowUnix = nowUnixTime.toISOString()
 
       const founduser = await UserModel.findOne({ tgid: localuserid })
       if (!founduser) {
-        const userId = generateNumber(nowUnix) || nowUnix
+        const userId = generateNumber(timeDate) || timeDate
 
         const userForm = {}
         userForm.timezone = 'UTC'
@@ -190,12 +192,62 @@ export const userNewParamAdd = async (req, res) => {
 
       {
         $set: {
-          notifications: {
-            empty: false,
-            basic: true,
-            echoes: true,
-            time: '6:00 pm',
-          },
+          achive: [
+            {
+              id: 101,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 102,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 103,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 104,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 105,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 106,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 107,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 108,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+            {
+              id: 109,
+              done: false,
+              checked: false,
+              current: 0,
+            },
+          ],
         },
       },
       { multi: true } // This option is not necessary for updateMany, but added for clarity
