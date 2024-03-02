@@ -1,4 +1,5 @@
 import UserModel from '../models/Usermodel.js'
+import { postStat } from './Statistics.js'
 
 function generateNumber(inputNumber) {
   const randomSuffix = Array.from({ length: 3 }, () =>
@@ -57,6 +58,10 @@ export const getUser = async (req, res) => {
           res.json({
             user: userData,
           })
+
+          if (userData) {
+            await postStat('users')
+          }
         } else {
           res.status(500).json({
             error: 500,
@@ -98,6 +103,10 @@ export const getUser = async (req, res) => {
         res.json({
           user: userData,
         })
+
+        if (userData) {
+          await postStat('visits')
+        }
       }
     } catch (error) {
       console.log(error)
@@ -145,6 +154,8 @@ export const getUserTgMessage = async (user) => {
 
         const newuser = await doc.save()
         if (newuser) {
+          await postStat('users')
+
           return {
             success: true,
             message: 'New user was saved!',
@@ -160,6 +171,7 @@ export const getUserTgMessage = async (user) => {
           }
         }
       } else {
+        await postStat('messages')
         return {
           success: true,
           message: 'User already exist',
@@ -192,62 +204,7 @@ export const userNewParamAdd = async (req, res) => {
 
       {
         $set: {
-          achive: [
-            {
-              id: 101,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 102,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 103,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 104,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 105,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 106,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 107,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 108,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-            {
-              id: 109,
-              done: false,
-              checked: false,
-              current: 0,
-            },
-          ],
+          'notifications.week': true,
         },
       },
       { multi: true } // This option is not necessary for updateMany, but added for clarity

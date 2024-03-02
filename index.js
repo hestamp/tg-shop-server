@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import { config } from 'dotenv'
 import compression from 'compression'
 import cors from 'cors'
+import cron from 'node-cron'
 import { authLimiter, globalLimiter } from './utils/limiter.js'
 import {
   getUser,
@@ -183,18 +184,33 @@ bot.on('message', async (msg) => {
   }
 })
 
-const runNotificationsCheckAndSend = async () => {
-  // Get the current minute
-  const currentMinute = new Date().getMinutes()
-  console.log(`Notifications check and send run at ${currentMinute} minute`)
+// const runNotificationsCheckAndSend = async () => {
+//   // Get the current minute
+//   const currentMinute = new Date()
+//   console.log(`Notifications check and send run at ${currentMinute} minute`)
+
+//   await sendNotificationsToUsers({ bot: bot })
+
+//   // Schedule the next check after 1 minute
+//   setTimeout(runNotificationsCheckAndSend, 60000) // 1 minutes * 60 seconds * 1000 milliseconds
+// }
+
+// runNotificationsCheckAndSend()
+
+cron.schedule('0,30 * * * *', async () => {
+  const currentDate = new Date()
+  console.log(`Notifications check and send run at ${currentDate}`)
 
   await sendNotificationsToUsers({ bot: bot })
-
-  // Schedule the next check after 1 minute
-  setTimeout(runNotificationsCheckAndSend, 60000) // 1 minutes * 60 seconds * 1000 milliseconds
-}
-
-runNotificationsCheckAndSend()
+})
+cron.schedule('0 0 * * *', async () => {
+  await postStat('users', true)
+  await postStat('visits', true)
+  await postStat('messages', true)
+  await postStat('echoes', true)
+  await postStat('repetition', true)
+  await postStat('completed', true)
+})
 
 const defaultPort = 8000
 

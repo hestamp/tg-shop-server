@@ -1,4 +1,5 @@
 import UserModel from '../models/Usermodel.js'
+import { postStat } from './Statistics.js'
 
 export const settingUpdate = async (req, res) => {
   try {
@@ -118,6 +119,9 @@ export const createEcho = async (req, res) => {
     res.json({
       success: true,
     })
+
+    await postStat('echoes')
+    await postStat('repetition')
   } catch (error) {
     console.error(error)
     res.status(500).json({
@@ -135,8 +139,6 @@ export const editEcho = async (req, res) => {
     const isCompleted = req.body.completed || false
     const repStat = req.body.repStat
     const repDate = req.body.repDate
-    console.log(repStat)
-    console.log(repDate)
 
     // Find the user by authId
     const user = await UserModel.findOne({ authId: UserId })
@@ -168,11 +170,14 @@ export const editEcho = async (req, res) => {
 
     // Save the updated user document
     const newuserSave = await user.save()
-    console.log(newuserSave)
 
     res.json({
       success: true,
     })
+
+    if (isRepeat) {
+      await postStat('repetition')
+    }
   } catch (error) {
     console.error(error)
     res.status(500).json({

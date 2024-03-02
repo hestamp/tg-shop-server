@@ -48,6 +48,7 @@ const UserSchema = new mongoose.Schema(
     },
     notifications: {
       basic: { type: Boolean, default: true },
+      week: { type: Boolean, default: true },
       echoes: { type: Boolean, default: true },
       empty: { type: Boolean, default: false },
       time: { type: String, default: null },
@@ -129,6 +130,3 @@ const UserSchema = new mongoose.Schema(
 )
 
 export default mongoose.model('User', UserSchema)
-
-// export const UserModel =
-//   mongoose.models.User || mongoose.model('User', UserSchema)
