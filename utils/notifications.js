@@ -5,6 +5,41 @@ dayjs.extend(utc)
 dayjs.extend(timezone)
 import UserModel from '../models/Usermodel.js'
 
+const BOTURL = process.env.BOT_WEBAPP
+const URLSLUG = 'https://t.me/mindechobot/web'
+
+const generateButtContinue = () => {
+  const textToContinue = [
+    'Advance in knowledge',
+    'Proceed with learning',
+    'Explore further',
+    'Keep learning',
+    'Move forward',
+    'Continue education',
+    'Extend your learning',
+    'Further study',
+    'Uncover more insights',
+    'Continue learning',
+  ]
+
+  return textToContinue[Math.floor(Math.random() * textToContinue.length)]
+}
+const generateButtEmpty = () => {
+  const newEchoAlternatives = [
+    'New echo',
+    'Create echo',
+    'Start echo',
+    'Begin new echo',
+    'Begin creation',
+    'Build new',
+    'Open mind',
+  ]
+
+  return newEchoAlternatives[
+    Math.floor(Math.random() * newEchoAlternatives.length)
+  ]
+}
+
 const generateNoEchoMessage = () => {
   const messages = [
     "You don't have any echoes scheduled for today. Why not take this opportunity to learn something new?",
@@ -18,61 +53,74 @@ const generateNoEchoMessage = () => {
     'Echo-free zone for today. Seize the moment to embark on a learning adventure!',
     'No echoes scheduled. Dive into the world of knowledge and create new echoes!',
   ]
-  return messages[Math.floor(Math.random() * messages.length)]
+  const emptyButt = generateButtEmpty()
+  const userMsg = messages[Math.floor(Math.random() * messages.length)]
+  return { message: userMsg, btn: emptyButt }
 }
 
 const generateEchoMessage = (echoNames) => {
   const numEchoes = echoNames.length
 
+  const wrapWithStrong = (text) => `<strong>${text}</strong>`
+
   if (numEchoes <= 2) {
     // Messages for 2 or fewer echoes
     const messages = [
-      `For today you need to repeat ${echoNames.join(
-        ' and '
+      `For today you need to repeat ${wrapWithStrong(
+        echoNames.join(' and ')
       )} to continue your streak`,
-      `You have echoes scheduled for today: ${echoNames.join(' and ')}`,
-      `Don't forget to repeat ${echoNames.join(
-        ' and '
+      `You have echoes scheduled for today: ${wrapWithStrong(
+        echoNames.join(' and ')
+      )}`,
+      `Don't forget to repeat ${wrapWithStrong(
+        echoNames.join(' and ')
       )} today to keep up with your routine`,
-      `Today's echoes include ${echoNames.join(
-        ' and '
+      `Today's echoes include ${wrapWithStrong(
+        echoNames.join(' and ')
       )}. Make sure to repeat them!`,
-      `Your schedule for today includes ${echoNames.join(
-        ' and '
+      `Your schedule for today includes ${wrapWithStrong(
+        echoNames.join(' and ')
       )}. Repeat them to stay on track`,
       `Echoes for today: ${echoNames.join(' and ')}`,
     ]
-    return messages[Math.floor(Math.random() * messages.length)]
+    const btnText = generateButtContinue()
+    const userMsg = messages[Math.floor(Math.random() * messages.length)]
+
+    return { message: userMsg, btn: btnText }
   } else {
     // Messages for more than 2 echoes
     const remainingEchoes = numEchoes - 2
     const messages = [
-      `For now you need to repeat ${echoNames
-        .slice(0, 2)
-        .join(
-          ' , '
-        )} and ${remainingEchoes} more echoes to continue your streak`,
-      `You have ${numEchoes} echoes scheduled for today. Start with ${echoNames
-        .slice(0, 2)
-        .join(' , ')} and continue with the rest`,
-      `Today's echoes include ${echoNames
-        .slice(0, 2)
-        .join(
-          ' , '
-        )} and ${remainingEchoes} more. Make sure to complete them all!`,
-      `To keep your momentum going, repeat ${echoNames
-        .slice(0, 2)
-        .join(', ')} today, and don't forget about the others`,
-      `Make today count by starting with ${echoNames
-        .slice(0, 2)
-        .join(
-          ' , '
-        )} and then completing the remaining ${remainingEchoes} echoes`,
-      `Echoes for today: ${echoNames
-        .slice(0, 2)
-        .join(', ')} and ${remainingEchoes} more`,
+      `For now you need to repeat ${wrapWithStrong(
+        echoNames.slice(0, 2).join(' , ')
+      )} and ${wrapWithStrong(
+        remainingEchoes
+      )} more echoes to continue your streak`,
+      `You have ${wrapWithStrong(
+        numEchoes
+      )} echoes scheduled for today. Start with ${wrapWithStrong(
+        echoNames.slice(0, 2).join(' , ')
+      )} and continue with the rest`,
+      `Today's echoes include ${wrapWithStrong(
+        echoNames.slice(0, 2).join(' , ')
+      )} and ${wrapWithStrong(
+        remainingEchoes
+      )} more. Make sure to complete them all!`,
+      `To keep your momentum going, repeat ${wrapWithStrong(
+        echoNames.slice(0, 2).join(' , ')
+      )} today, and don't forget about the others`,
+      `Make today count by starting with ${wrapWithStrong(
+        echoNames.slice(0, 2).join(' , ')
+      )} and then completing the remaining ${wrapWithStrong(
+        remainingEchoes
+      )} echoes`,
+      `Echoes for today: ${wrapWithStrong(
+        echoNames.slice(0, 2).join(' , ')
+      )} and ${wrapWithStrong(remainingEchoes)} more`,
     ]
-    return messages[Math.floor(Math.random() * messages.length)]
+    const btnText = generateButtContinue()
+    const msgForUser = messages[Math.floor(Math.random() * messages.length)]
+    return { message: msgForUser, btn: btnText || 'Continue streak' }
   }
 }
 
@@ -135,26 +183,68 @@ export const sendNotificationsToUsers = async ({ bot }) => {
         const userName = user.fullName
 
         if (today) {
-          const message = generateEchoMessage(echoNames)
+          const { message, btn } = generateEchoMessage(echoNames)
 
           // Send notification to user
           console.log(
             `Sending notification to user ${userName} with id: ${userId}, remind to repeat added echoes`
           )
 
+          const keyboard = {
+            inline_keyboard: [
+              [
+                {
+                  text: btn || 'Continue learning',
+                  url: BOTURL || URLSLUG,
+                },
+              ],
+            ],
+          }
+
+          const messageOptions = {
+            reply_markup: JSON.stringify(keyboard),
+            parse_mode: 'HTML',
+            disable_web_page_preview: true,
+          }
+
           bot
-            .sendMessage(userId, message)
+            .sendMessage(
+              userId,
+              message || 'Something to repeat',
+              messageOptions
+            )
             .then((response) => console.log('Message sent'))
             .catch((error) => console.error(error))
         } else {
           if (user.notifications.empty == true) {
-            const messageNoEchoes = generateNoEchoMessage()
+            const { message, btn } = generateNoEchoMessage()
             console.log(
               `Sending notification to user ${userName} with id: ${userId}, remind to add some echoes`
             )
 
+            const keyboard = {
+              inline_keyboard: [
+                [
+                  {
+                    text: btn || 'Create new',
+                    url: BOTURL || URLSLUG,
+                  },
+                ],
+              ],
+            }
+
+            const messageOptions = {
+              reply_markup: JSON.stringify(keyboard),
+              parse_mode: 'HTML',
+              disable_web_page_preview: true,
+            }
+
             bot
-              .sendMessage(userId, messageNoEchoes)
+              .sendMessage(
+                userId,
+                message || 'Something to repeat',
+                messageOptions
+              )
               .then((response) => console.log('Message sent'))
               .catch((error) => console.error(error))
           } else {
