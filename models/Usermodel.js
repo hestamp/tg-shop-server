@@ -27,6 +27,8 @@ const UserSchema = new mongoose.Schema(
         type: Number,
         default: 0,
       },
+      level: { type: Number, default: 0 },
+      exp: { type: Number, default: 0 },
       learnedTimes: {
         type: Number,
         default: 0,

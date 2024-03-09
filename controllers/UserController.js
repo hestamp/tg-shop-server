@@ -204,7 +204,8 @@ export const userNewParamAdd = async (req, res) => {
 
       {
         $set: {
-          'notifications.week': true,
+          'stats.level': 0,
+          'stats.exp': 0,
         },
       },
       { multi: true } // This option is not necessary for updateMany, but added for clarity

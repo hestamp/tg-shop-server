@@ -1,6 +1,12 @@
 import UserModel from '../models/Usermodel.js'
 import { postStat } from './Statistics.js'
 
+function expToLvl(level) {
+  // Calculate the experience required for the next level
+  // For example: 1 lvl = 100exp, 2 lvl = 200 exp, 3 lvl = 300 exp, and so on
+  return level * 100
+}
+
 export const settingUpdate = async (req, res) => {
   try {
     const UserId = req.body.authId
@@ -104,7 +110,8 @@ export const createEcho = async (req, res) => {
     const repStat = req.body.repStat
     const repDate = req.body.repDate
 
-    await UserModel.updateOne(
+    // Find and update the user in one step
+    const updatedUser = await UserModel.findOneAndUpdate(
       { authId: UserId },
       {
         $push: { echos: newEcho },
@@ -113,19 +120,37 @@ export const createEcho = async (req, res) => {
           'stats.repetitionEchoes.last': repDate,
           'stats.repetitionEchoes.count': repStat,
         },
-      }
+        $inc: { 'stats.exp': 30 },
+      },
+      { new: true }
     )
+
+    // Check if the user exists
+    if (!updatedUser) {
+      return res.status(404).json({ message: 'User not found' })
+    }
+
+    // Check if the user leveled up
+    while (updatedUser.stats.exp >= expToLvl(updatedUser.stats.level + 1)) {
+      updatedUser.stats.level += 1
+      updatedUser.stats.exp -= expToLvl(updatedUser.stats.level)
+    }
+
+    // Save the updated user in the database
+    await updatedUser.save()
 
     res.json({
       success: true,
+      userStats: updatedUser.stats,
     })
 
+    // You may choose to post stats after updating the user's stats
     await postStat('echoes')
     await postStat('repetition')
   } catch (error) {
     console.error(error)
     res.status(500).json({
-      message: "Can't create new echo",
+      message: "Can't create a new echo",
     })
   }
 }
@@ -157,22 +182,32 @@ export const editEcho = async (req, res) => {
     user.echos[echoIndex] = updatedEchoData
     if (isRepeat) {
       user.stats.learnedTimes = user.stats.learnedTimes + 1
+      user.stats.exp = user.stats.exp + 10
     }
+
     if (isCompleted) {
       user.stats.completedEchoes = user.stats.completedEchoes + 1
+      user.stats.exp = user.stats.exp + 100
     }
+
     if (repStat) {
       user.stats = { ...user.stats, 'repetitionEchoes.count': repStat }
     }
+
     if (repDate) {
       user.stats = { ...user.stats, 'repetitionEchoes.last': repDate }
     }
 
+    while (user.stats.exp >= expToLvl(user.stats.level + 1)) {
+      user.stats.level += 1
+      user.stats.exp -= expToLvl(user.stats.level)
+    }
     // Save the updated user document
     const newuserSave = await user.save()
 
     res.json({
       success: true,
+      userStats: user.stats,
     })
 
     if (isRepeat) {
@@ -191,15 +226,53 @@ export const removeEcho = async (req, res) => {
     const UserId = req.body.authId
     const echoIdToRemove = req.body.echoId
 
-    await UserModel.updateOne(
-      {
-        authId: UserId,
-      },
-      { $pull: { echos: { id: echoIdToRemove } } }
-    )
+    // Find the user and the echo to remove
+    const user = await UserModel.findOne({ authId: UserId })
+    const echoToRemove = user.echos.find((echo) => echo.id === echoIdToRemove)
+
+    // Check if the user exists and if the echo to remove exists
+    if (!user || !echoToRemove) {
+      return res.status(404).json({ message: 'User or echo not found' })
+    }
+
+    // Calculate the experience to be added back (30 exp for removing the echo)
+    const expToAddBack = 30
+
+    // Check if removing the echo will result in negative exp
+    if (user.stats.exp - expToAddBack < 0) {
+      // Calculate the level to be decreased
+      const levelsToDecrease = Math.ceil((user.stats.exp - expToAddBack) / 100)
+      const newLevel = Math.max(user.stats.level - levelsToDecrease, 0)
+
+      // Calculate the remaining exp after decreasing levels
+      const remainingExp =
+        user.stats.exp - expToAddBack + levelsToDecrease * 100
+
+      // Update the user stats, setting the new level and remaining exp
+      await UserModel.updateOne(
+        { authId: UserId },
+        {
+          $pull: { echos: { id: echoIdToRemove } },
+          $set: {
+            'stats.level': newLevel,
+            'stats.exp': remainingExp,
+          },
+        }
+      )
+    } else {
+      // If removing the echo doesn't result in negative exp, update the user normally
+      await UserModel.updateOne(
+        { authId: UserId },
+        {
+          $pull: { echos: { id: echoIdToRemove } },
+          $inc: { 'stats.exp': -expToAddBack }, // Decrease 30 exp for removing the echo
+        }
+      )
+    }
 
     res.json({
       success: true,
+      userStats: user.stats,
     })
   } catch (error) {
     console.error(error)
